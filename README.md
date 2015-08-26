@@ -51,6 +51,12 @@ Install [Composer](https://getcomposer.org/download/) if it isn't already.
     cd ..
     php admin/cli/upgrade.php
 
+## Apache rewrite rule
+
+Add the following Apache rewrite rule:
+
+    RewriteRule ^(/walls) /mod/communitywall/bootstrap.php?slug=$1 [QSA,L]
+
 ## Bower components
 
     cd mod/communitywall
