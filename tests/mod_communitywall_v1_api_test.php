@@ -36,9 +36,6 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
         if (!defined('SLUG')) {
             define('SLUG', '');
         }
-        if (!defined('SILEX_WEB_TEST')) {
-            define('SILEX_WEB_TEST', true);
-        }
 
         // create Silex app
         $this->_app = require __DIR__ . '/../app.php';
