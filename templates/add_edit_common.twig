@@ -1,0 +1,11 @@
+<div class="control-group">
+    {{ form_label(form.title, trans('title', plugin), {'label_attr': {'class': 'control-label'}}) }}
+    <div class="controls">
+        {{ form_widget(form.title) }}
+    </div>
+    {{ form_errors(form.title) }}
+</div>
+<div class="form-actions">
+    <a href="{{ wwwroot ~ slug ~ path('byinstanceid', {id: instanceid}) }}">{{ trans('cancel') }}</a>
+    <button type="submit" class="btn-primary">{{ trans('savechanges') }}</button>
+</div>

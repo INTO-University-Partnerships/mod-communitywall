@@ -1,0 +1,8 @@
+<div>
+    <span>{% verbatim %}<a href="{{ baseurl }}/wall/{{ wall.id }}">{{ wall.title }}</a>{% endverbatim %}</span>
+    <span>{{ trans('by', plugin)|lower }}&nbsp;{% verbatim %}{{ wall.userfullname }}{% endverbatim %}</span>
+    <span class="right" ng-show="wall.is_owner || canManage">
+        <button ng-click="editT({wallid: wall.id})">{{ trans('edit') }}</button>
+        <button ng-click="deleteT({wallid: wall.id})">{{ trans('delete') }}</button>
+    </span>
+</div>

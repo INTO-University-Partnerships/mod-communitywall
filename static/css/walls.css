@@ -1,0 +1,196 @@
+span.right {
+    float: right;
+}
+
+.wall-messages {
+    margin: 10px 0;
+}
+
+.wall-container {
+    height: 380px;
+    min-height: 380px;
+    margin: 15px 0;
+}
+
+.wall-pagination {
+    margin: 0 10px;
+}
+
+/** notes page **/
+/** .communitywall-container needs to be relative for notes to drag-drop properly */
+.communitywall-container {
+    position: relative;
+}
+
+.communitywall-note-container {
+    height: 500px;
+    min-height: 500px;
+    background: #f8f8f8;
+    position: relative;
+}
+
+.view-note,
+.add-note {
+    position: absolute;
+    margin: 10px;
+    border:2px solid transparent;
+    max-width: 500px;
+}
+
+.view-note.active,
+.add-note {
+    padding: 10px;
+    margin: 0px;
+    border: 2px dashed #ffd905;
+}
+
+.view-note.active,
+.view-note:hover,
+.add-note {
+    z-index: 100000!important;
+}
+
+.view-note > div,
+.add-note > div {
+    position: relative;
+    float: left;
+    clear:both;
+    min-height: 40px;
+    min-width: 100px;
+    max-width: 100%;
+    background: #FFF;
+    padding: 8px;
+    /*max-width: 300px;*/
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.view-note > div,
+.add-note > div {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+}
+
+.view-note > div:hover {
+    color: white;
+    background: black;
+}
+
+.view-note.ui-draggable-dragging > div {
+    cursor: move;
+}
+
+.view-note[aria-disabled="false"] > div:hover a {
+    color: white;
+}
+
+.view-note span.userpicture {
+    float: left;
+    height: 100%;
+    position: absolute;
+    left: 8px;
+}
+
+.view-note > div div {
+    margin-left: 25px;
+}
+
+.view-note div.input button,
+.add-note button {
+    margin: 0px 5px 0 0;
+}
+
+.view-note span.username {
+    font-weight: bold;
+    display: block;
+}
+
+.view-note textarea,
+.add-note textarea {
+    width: 92%; /** fall back **/
+    width: calc(100% - 20px);
+}
+
+.view-note .output .note {
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Firefox */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word;
+}
+
+.main-buttons {
+    margin-top: 10px;
+}
+
+.main-buttons button:first-child {
+    margin-left: 0px;
+}
+
+div.notice {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+div.notice span {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFF;
+    position: relative;
+    display: block;
+    padding: 10px 20px;
+    background: rgba(0, 136, 204, 0.4);
+    top: -60px;
+    -webkit-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
+    -moz-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
+    -ms-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
+    -o-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
+    animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
+}
+
+@-webkit-keyframes _slidedown {
+    100% { top: 0px; }
+}
+
+@-moz-keyframes _slidedown {
+    100% { top: 0px; }
+}
+
+@-o-keyframes _slidedown {
+    100% { top: 0px; }
+}
+
+@keyframes _slidedown {
+    100% { top: 0px; }
+}
+
+@-webkit-keyframes _slideup {
+    100% { top: -60px; }
+}
+
+@-moz-keyframes _slideup {
+    100% { top: -60px; }
+}
+
+@-o-keyframes _slideup {
+    100% { top: -60px; }
+}
+
+@keyframes _slideup {
+    100% { top: -60px; }
+}
+
+div.notice.slideup span {
+    top: 0px;
+    -webkit-animation: _slideup 0.3s ease-in alternate forwards;
+    -moz-animation: _slideup 0.3s ease-in alternate forwards;
+    -ms-animation: _slideup 0.3s ease-in alternate forwards;
+    -o-animation: _slideup 0.3s ease-in alternate forwards;
+    animation: _slideup 0.3s ease-in alternate forwards;
+}

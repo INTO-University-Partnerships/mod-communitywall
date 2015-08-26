@@ -1,0 +1,8 @@
+{{ page('module', cm.id, wwwroot ~ slug ~ path('add', {instanceid: instanceid})) }}
+{{ header()|raw }}
+<form action="{{ wwwroot ~ slug ~ path('add', {instanceid: instanceid}) }}" class="form-horizontal" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="instanceid" value="{{ instanceid }}"/>
+    <input type="hidden" name="sesskey" value="{{ sesskey() }}"/>
+    {% include 'add_edit_common.twig' %}
+</form>
+{{ footer()|raw }}
