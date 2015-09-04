@@ -148,7 +148,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope',
                 });
 
                 // Set focus to textarea
-                scope.$watch('isEditing', function(newValue) {
+                scope.$watch('isEditing', function (newValue) {
                     if (!newValue) {
                         return;
                     }
@@ -176,7 +176,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope',
                     }
                 });
 
-                element.bind('click', function($event) {
+                element.bind('click', function ($event) {
                     scope.clicks++;
                     if (scope.clicks === 1) {
                         scope.timer = $timeout(function () {
