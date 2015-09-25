@@ -29,6 +29,7 @@ $string['communitywallclosed_help'] = 'Community Walls cannot be added to a Comm
 $string['closed'] = 'Closed';
 $string['activityclosed:user'] = 'This activity is closed. No Community Walls can be added.';
 $string['activityclosed:admin'] = 'This activity is closed. No Community Walls can be added by students.';
+$string['adding'] = 'Adding';
 
 // capabilities
 $string['communitywall:addinstance'] = 'Add a new community wall';

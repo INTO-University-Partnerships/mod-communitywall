@@ -67,6 +67,12 @@ $controller->match('/{instanceid}/add', function (Request $request, $instanceid)
         }
     }
 
+    // set heading and title
+    $app['heading_and_title'](
+        $course->fullname,
+        get_string('adding', $app['plugin']) . ' ' . get_string('pluginname', $app['plugin'])
+    );
+
     // render
     return $app['twig']->render('add.twig', array(
         'cm' => $cm,
@@ -133,6 +139,12 @@ $controller->match('/{instanceid}/edit/{id}', function (Request $request, $insta
             )));
         }
     }
+
+    // set heading and title
+    $app['heading_and_title'](
+        $course->fullname,
+        get_string('editinga', 'moodle', get_string('pluginname', $app['plugin']))
+    );
 
     // render
     return $app['twig']->render('edit.twig', array(

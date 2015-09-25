@@ -49,6 +49,7 @@ foreach (array(
     'get_course_and_course_module',
     'get_groupmode',
     'has_capability',
+    'heading_and_title',
     'is_guest_user',
     'now',
     'require_course_login',

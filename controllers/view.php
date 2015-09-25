@@ -62,6 +62,9 @@ $controller->get('/{id}', function ($id) use ($app) {
     // get module context
     $context = context_module::instance($cm->id);
 
+    // set heading and title
+    $app['heading_and_title']($course->fullname, $instance->name);
+
     // render
     return $app['twig']->render('walls.twig', array(
         'baseurl' => $CFG->wwwroot . SLUG,
@@ -110,6 +113,15 @@ $controller->get('/wall/{id}', function ($id) use ($app) {
     // get module context
     $context = context_module::instance($cm->id);
 
+    // set heading and title
+    $instance_title = sprintf(
+        '%s %s %s',
+        $wall['title'],
+        strtolower(get_string('by', $app['plugin'])),
+        $wall['userfullname']
+    );
+    $app['heading_and_title']($course->fullname, $instance_title);
+
     return $app['twig']->render('view.twig', array(
         'baseurl' => $CFG->wwwroot . SLUG,
         'cm' => $cm,
@@ -119,10 +131,11 @@ $controller->get('/wall/{id}', function ($id) use ($app) {
         'can_manage' => $app['has_capability']('moodle/course:manageactivities', $context),
         'is_guest' => $app['is_guest_user'](),
         'instance' => $instance,
+        'instance_title' => $instance_title,
     ));
 })
-    ->bind('wall')
-    ->assert('id', '\d+');
+->bind('wall')
+->assert('id', '\d+');
 
 // return the controller
 return $controller;
