@@ -68,7 +68,7 @@ describe('addNote', function () {
             scope.$digest();
             var e = $.Event('dblClick');
             e.originalEvent = e;
-            spyOn(scope, '$broadcast').andCallThrough();
+            spyOn(scope, '$broadcast').and.callThrough();
             scope.$broadcast('sendDblClickEvent', e);
             expect(scope.$broadcast).toHaveBeenCalled();
         });
@@ -90,7 +90,7 @@ describe('addNote', function () {
         it('should receive a sendClickEvent', function () {
             scope.$digest();
             scope.note = 'Note 001';
-            spyOn(scope, '$broadcast').andCallThrough();
+            spyOn(scope, '$broadcast').and.callThrough();
             var e = $.Event('click');
             e.originalEvent = e;
             scope.$broadcast('sendClickEvent', e);
@@ -101,7 +101,7 @@ describe('addNote', function () {
             scope.$digest();
             scope.addingNote = false;
             scope.$digest();
-            spyOn(scope, '$broadcast').andCallThrough();
+            spyOn(scope, '$broadcast').and.callThrough();
             var e = $.Event('click');
             scope.$broadcast('sendClickEvent', e);
             expect(scope.$broadcast).toHaveBeenCalled();

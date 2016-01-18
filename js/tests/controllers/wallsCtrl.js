@@ -71,21 +71,21 @@ describe('wallsCtrl', function () {
         it('should provide a confirmation dialog', function () {
             spyOn(windowMock, 'confirm');
             scope.deleteWall(13);
-            expect(windowMock.confirm.callCount).toEqual(1);
+            expect(windowMock.confirm.calls.count()).toEqual(1);
         });
 
         it('should delegate to the wallsSrv service', function () {
-            spyOn(windowMock, 'confirm').andReturn(true);
-            spyOn(wallsSrvMock, 'deleteWall').andReturn({
+            spyOn(windowMock, 'confirm').and.returnValue(true);
+            spyOn(wallsSrvMock, 'deleteWall').and.returnValue({
                 then: function () {}
             });
             scope.deleteWall(13);
             expect(wallsSrvMock.deleteWall).toHaveBeenCalledWith(13);
-            expect(wallsSrvMock.deleteWall.callCount).toEqual(1);
+            expect(wallsSrvMock.deleteWall.calls.count()).toEqual(1);
         });
 
         it('should get page of walls when resolved', function () {
-            spyOn(windowMock, 'confirm').andReturn(true);
+            spyOn(windowMock, 'confirm').and.returnValue(true);
             spyOn(scope, 'getPageOfWalls');
             scope.deleteWall(17);
             deferred.deleteWall.resolve();
@@ -95,7 +95,7 @@ describe('wallsCtrl', function () {
         });
 
         it('should move the current page back one if the last wall on the current page was deleted', function () {
-            spyOn(windowMock, 'confirm').andReturn(true);
+            spyOn(windowMock, 'confirm').and.returnValue(true);
             scope.perPage = 5;
             scope.total = 6;
             scope.currentPage = 1;
@@ -150,14 +150,14 @@ describe('wallsCtrl', function () {
 
         it('should move to the next page', function () {
             scope.currentPage = 8;
-            spyOn(scope, 'pageCount').andReturn(10);
+            spyOn(scope, 'pageCount').and.returnValue(10);
             scope.nextPage();
             expect(scope.currentPage).toEqual(9);
         });
 
         it('should do nothing if on the last page', function () {
             scope.currentPage = 9;
-            spyOn(scope, 'pageCount').andReturn(10);
+            spyOn(scope, 'pageCount').and.returnValue(10);
             scope.nextPage();
             expect(scope.currentPage).toEqual(9);
         });
@@ -170,13 +170,13 @@ describe('wallsCtrl', function () {
 
         it('should return "disabled" if on the last page', function () {
             scope.currentPage = 9;
-            spyOn(scope, 'pageCount').andReturn(10);
+            spyOn(scope, 'pageCount').and.returnValue(10);
             expect(scope.nextPageDisabled()).toEqual('disabled');
         });
 
         it('should return "" (i.e. an empty string) if not on the last page', function () {
             var i;
-            spyOn(scope, 'pageCount').andReturn(10);
+            spyOn(scope, 'pageCount').and.returnValue(10);
             for (i = 0; i < 9; ++i) {
                 scope.currentPage = i;
                 expect(scope.nextPageDisabled()).toEqual('');
@@ -215,19 +215,19 @@ describe('wallsCtrl', function () {
 
         it('should delegate to the wallsSrv service', function () {
             var i;
-            spyOn(wallsSrvMock, 'getPageOfWalls').andReturn({
+            spyOn(wallsSrvMock, 'getPageOfWalls').and.returnValue({
                 then: function () {}
             });
             for (i = 0; i < 5; ++i) {
                 scope.getPageOfWalls(i);
                 expect(wallsSrvMock.getPageOfWalls).toHaveBeenCalledWith(i, scope.perPage);
             }
-            expect(wallsSrvMock.getPageOfWalls.callCount).toEqual(5);
+            expect(wallsSrvMock.getPageOfWalls.calls.count()).toEqual(5);
         });
 
         it("should cancel any pending promise that hasn't been resolved", function () {
             spyOn($timeout, 'cancel');
-            spyOn(wallsSrvMock, 'getPageOfWalls').andReturn({
+            spyOn(wallsSrvMock, 'getPageOfWalls').and.returnValue({
                 then: function () {}
             });
             scope.timeoutPromise = $timeout(function () {}, 1000);
@@ -268,18 +268,18 @@ describe('wallsCtrl', function () {
 
         it('should call itself again after a 10s timeout', function () {
             scope.$digest();
-            spyOn(scope, 'getPageOfWalls').andCallThrough();
+            spyOn(scope, 'getPageOfWalls').and.callThrough();
             scope.getPageOfWalls(0);
             deferred.getPageOfWalls.resolve({
                 walls: [],
                 total: 0
             });
-            expect(scope.getPageOfWalls.calls.length).toEqual(1);
+            expect(scope.getPageOfWalls.calls.count()).toEqual(1);
             scope.$digest();
             $timeout.flush(9999);
-            expect(scope.getPageOfWalls.calls.length).toEqual(1);
+            expect(scope.getPageOfWalls.calls.count()).toEqual(1);
             $timeout.flush(1);
-            expect(scope.getPageOfWalls.calls.length).toEqual(2);
+            expect(scope.getPageOfWalls.calls.count()).toEqual(2);
         });
     });
 
@@ -302,7 +302,7 @@ describe('wallsCtrl', function () {
             scope.$digest();
             expect(scope.getPageOfWalls).toHaveBeenCalledWith(2);
 
-            expect(scope.getPageOfWalls.callCount).toEqual(3);
+            expect(scope.getPageOfWalls.calls.count()).toEqual(3);
         });
     });
 });

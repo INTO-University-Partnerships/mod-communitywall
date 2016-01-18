@@ -93,12 +93,12 @@ describe('notesCtrl', function () {
                 notes: [],
                 total: 0
             });
-            expect(scope.getNotes.calls.length).toEqual(1);
+            expect(scope.getNotes.calls.count()).toEqual(1);
             scope.$digest();
             $timeout.flush(9999);
-            expect(scope.getNotes.calls.length).toEqual(1);
+            expect(scope.getNotes.calls.count()).toEqual(1);
             $timeout.flush(1);
-            expect(scope.getNotes.calls.length).toEqual(2);
+            expect(scope.getNotes.calls.count()).toEqual(2);
         });
     });
 
@@ -109,7 +109,7 @@ describe('notesCtrl', function () {
 
         it('should call getNotes', function () {
             scope.$digest();
-            spyOn(scope, 'getNotes').andCallThrough();
+            spyOn(scope, 'getNotes').and.callThrough();
             scope.postNote('Note 001');
             deferred.postNote.resolve();
             scope.$digest();
@@ -125,7 +125,7 @@ describe('notesCtrl', function () {
 
         it('should call notesSrv putNote', function () {
             scope.$digest();
-            spyOn(scope, 'putNote').andCallThrough();
+            spyOn(scope, 'putNote').and.callThrough();
             scope.putNote(1, 'Note 001');
             deferred.putNote.resolve();
             scope.$digest();
@@ -135,7 +135,7 @@ describe('notesCtrl', function () {
 
         it('should call getNotes', function () {
             scope.$digest();
-            spyOn(scope, 'getNotes').andCallThrough();
+            spyOn(scope, 'getNotes').and.callThrough();
             scope.putNote(1, 'Note 001');
             deferred.putNote.resolve();
             scope.$digest();
@@ -144,7 +144,7 @@ describe('notesCtrl', function () {
 
         it('should call getNotes when a reject is send back from the services', function () {
             scope.$digest();
-            spyOn(scope, 'getNotes').andCallThrough();
+            spyOn(scope, 'getNotes').and.callThrough();
             scope.putNote(1, 'Note 001');
             deferred.putNote.reject();
             scope.$digest();
@@ -159,7 +159,7 @@ describe('notesCtrl', function () {
 
         it('should call notesSrv deleteNote', function () {
             scope.$digest();
-            spyOn(scope, 'deleteNote').andCallThrough();
+            spyOn(scope, 'deleteNote').and.callThrough();
             scope.deleteNote(1);
             deferred.deleteNote.resolve();
             scope.$digest();
@@ -168,15 +168,15 @@ describe('notesCtrl', function () {
 
         it('should popup a confirm box', function () {
             scope.$digest();
-            spyOn(windowMock, 'confirm').andReturn(true);
+            spyOn(windowMock, 'confirm').and.returnValue(true);
             scope.deleteNote(1);
             expect(windowMock.confirm).toHaveBeenCalled();
         });
 
         it('should call getNotes', function () {
             scope.$digest();
-            spyOn(scope, 'getNotes').andCallThrough();
-            spyOn(windowMock, 'confirm').andReturn(true);
+            spyOn(scope, 'getNotes').and.callThrough();
+            spyOn(windowMock, 'confirm').and.returnValue(true);
             scope.deleteNote(1);
             deferred.deleteNote.resolve();
             scope.$digest();
@@ -193,7 +193,7 @@ describe('notesCtrl', function () {
         it('should set editingId to null and call getnotes', function () {
             scope.$digest();
             scope.editingId = 1;
-            spyOn(scope, 'getNotes').andCallThrough();
+            spyOn(scope, 'getNotes').and.callThrough();
             expect(scope.editingId).toEqual(1);
             scope.stopEditing();
             $timeout.flush(10000);

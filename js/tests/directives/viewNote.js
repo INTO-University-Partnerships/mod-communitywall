@@ -58,13 +58,13 @@ describe('viewNote', function () {
             scope.clicks = 0;
 
             scope.editingId = null;
-            scope.startEditing = jasmine.createSpy().andCallFake(function (note) {
+            scope.startEditing = jasmine.createSpy().and.callFake(function (note) {
                 scope.editingId = note.id;
             });
-            scope.stopEditing = jasmine.createSpy().andCallFake(function () {
+            scope.stopEditing = jasmine.createSpy().and.callFake(function () {
                 scope.editingId = null;
             });
-            scope.putNote = jasmine.createSpy().andCallFake(function () {
+            scope.putNote = jasmine.createSpy().and.callFake(function () {
                 scope.editingId = null;
             });
             scope.deleteNote = jasmine.createSpy();
@@ -155,7 +155,7 @@ describe('viewNote', function () {
             scope.note.note = 'Note 001 changed';
             expect(element.find('div.input.ng-hide').length).toEqual(0);
             expect(element.find('div.output.ng-hide').length).toEqual(1);
-            spyOn(scope, '$broadcast').andCallThrough();
+            spyOn(scope, '$broadcast').and.callThrough();
             var e = $.Event('click');
             scope.$broadcast('sendClickEvent', e);
             expect(scope.$broadcast).toHaveBeenCalled();
@@ -171,7 +171,7 @@ describe('viewNote', function () {
             element.find('div:first').trigger(e);
             scope.editingId = null;
             scope.$digest();
-            spyOn(scope, '$broadcast').andCallThrough();
+            spyOn(scope, '$broadcast').and.callThrough();
             e = $.Event('click');
             scope.$broadcast('sendClickEvent', e);
             expect(scope.$broadcast).toHaveBeenCalled();

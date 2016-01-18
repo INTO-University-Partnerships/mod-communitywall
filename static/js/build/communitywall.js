@@ -141,7 +141,7 @@ app.controller('notesCtrl', ['$scope', '$timeout', '$window', 'notesSrv', 'CONFI
 
     $scope.putNote = function (noteid, note) {
         $scope.editingId = null;
-        notesSrv.putNote(noteid, note)['finally'](function () {
+        notesSrv.putNote(noteid, note).finally(function () {
             $scope.getNotes();
         });
     };
@@ -150,7 +150,7 @@ app.controller('notesCtrl', ['$scope', '$timeout', '$window', 'notesSrv', 'CONFI
         if (!$window.confirm('Are you sure you want to delete this note?')) {
             return;
         }
-        notesSrv.deleteNote(noteid)['finally'](function () {
+        notesSrv.deleteNote(noteid).finally(function () {
             $scope.getNotes();
         });
     };
@@ -400,7 +400,7 @@ app.service('wallsSrv', ['$http', '$q', 'CONFIG', function ($http, $q, config) {
     this.deleteWall = function (wallid) {
         var deferred = $q.defer();
 
-        $http['delete'](url + '/' + wallid).success(function (data) {
+        $http.delete(url + '/' + wallid).success(function (data) {
             deferred.resolve(data);
         }).error(function (data) {
             deferred.reject(data);
@@ -444,7 +444,7 @@ app.service('notesSrv', ['$http', '$q', 'CONFIG', function ($http, $q, config) {
 
     this.deleteNote = function (noteid) {
         var deferred = $q.defer();
-        $http['delete'](url + '/' + noteid).success(function (data) {
+        $http.delete(url + '/' + noteid).success(function (data) {
             deferred.resolve(data);
         }).error(function (data) {
             deferred.reject(data);
