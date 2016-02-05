@@ -12,37 +12,37 @@
         <div ng-show="total == 0"><strong>{{ trans('nonotes', plugin) }}</strong></div>
     </div>
 
-    <div class="communitywall-note-container" communitywall-note-container ng-cloak>
-        <view-note ng-repeat="note in notes"
-                   note="note"
-                   can-manage="canManage"
-                   is-editing="editingId == note.id"
-                   start-editing="startEditing(note)"
-                   stop-editing="stopEditing()"
-                   delete-note="deleteNote(note.id)"
-                   save-changes="putNote(id, { note: note, xcoord: xcoord, ycoord: ycoord })"
-                   ng-class="{true:'active',false:''}[editingId == note.id]"
-                   ng-title="{true:'{{ trans('doubleclicktoedit', plugin) }}',false:''}[note.is_owner || canManage]"
-                   class="view-note"
-                   jqyoui-draggable
-                   data-jqyoui-options="{ containment: 'parent' }"
-                   data-drag="note.is_owner || canManage"></view-note>
+    <div ng-class="{'communitywall-note-container': true, 'disabled': noteContainerDisabled}" communitywall-note-container ng-cloak>
+        <view-note
+            ng-repeat="note in notes"
+            note="note"
+            can-manage="canManage"
+            editing-id="editingId"
+            start-editing="startEditing"
+            stop-editing="stopEditing"
+            delete-note="deleteNote"
+            save-changes="putNote"
+            ng-class="{true: 'active', false: ''}[editingId == note.id]"
+            ng-title="{true: '{{ trans('click_to_edit', plugin) }}', false: ''}[note.is_owner || canManage]"
+            class="view-note"
+            jqyoui-draggable
+            data-jqyoui-options="{containment: 'parent'}"
+            data-drag="note.is_owner || canManage">
+        </view-note>
 
-        <add-note ng-cloak
-                  note="note"
-                  save-changes="postNote({note: note, xcoord: xcoord, ycoord: ycoord})"
-                  adding-note="addingNote"
-                  ng-show="addingNote"
-                  class="add-note"></add-note>
-
-        <div class="notice" ng-class="{true:'slideup',false:''}[slideUp]">
-            <span>{{ trans('doubleclick_to_post', plugin) }}</span>
-        </div>
-
+        <add-note
+            ng-cloak
+            save-changes="postNote"
+            stop-adding="stopAdding"
+            adding-note="addingNote"
+            ng-show="addingNote"
+            class="add-note">
+        </add-note>
     </div>
 
     <div class="main-buttons">
         <button ng-click="backToCommunityWalls()">{{ trans('backtocommunitywalls', plugin) }}</button>
+        <button ng-click="addingNote = true;" ng-disabled="addingNote" ng-hide="isGuest">{{ trans('post_note', plugin) }}</button>
     </div>
 
 </div>
@@ -53,7 +53,11 @@
         instanceid: '{{ wall.instanceid }}',
         wallid: {{ wall.id}},
         canManage: {{ can_manage ? 'true' : 'false' }},
-        isGuest: {{ is_guest ? 'true' : 'false' }}
+        isGuest: {{ is_guest ? 'true' : 'false' }},
+        pollInterval: 60000,
+        messages: {
+            'confirmDeleteNote': '{{ trans('confirm_delete_note', plugin) }}'
+        }
     };
 </script>
 

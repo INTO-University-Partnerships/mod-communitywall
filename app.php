@@ -46,6 +46,7 @@ $app['module_table'] = 'communitywall';
 foreach (array(
     'course_module_viewed',
     'course_module_instance_list_viewed',
+    'get_all_notes',
     'get_course_and_course_module',
     'get_groupmode',
     'has_capability',

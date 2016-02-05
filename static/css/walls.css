@@ -29,6 +29,12 @@ span.right {
     position: relative;
 }
 
+.communitywall-note-container.disabled,
+.view-note .disabled {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
 .view-note,
 .add-note {
     position: absolute;
@@ -40,7 +46,7 @@ span.right {
 .view-note.active,
 .add-note {
     padding: 10px;
-    margin: 0px;
+    margin: 0;
     border: 2px dashed #ffd905;
 }
 
@@ -73,11 +79,6 @@ span.right {
     -ms-user-select: none;
     user-select: none;
     cursor: pointer;
-}
-
-.view-note > div:hover {
-    color: white;
-    background: black;
 }
 
 .view-note.ui-draggable-dragging > div {
@@ -130,30 +131,6 @@ span.right {
     margin-left: 0px;
 }
 
-div.notice {
-    width: 100%;
-    position: absolute;
-    top: 0px;
-    overflow: hidden;
-    z-index: 1000;
-}
-
-div.notice span {
-    font-size: 14px;
-    font-weight: bold;
-    color: #FFF;
-    position: relative;
-    display: block;
-    padding: 10px 20px;
-    background: rgba(0, 136, 204, 0.4);
-    top: -60px;
-    -webkit-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
-    -moz-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
-    -ms-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
-    -o-animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
-    animation: _slidedown 0.3s 1.5s ease-in alternate forwards;
-}
-
 @-webkit-keyframes _slidedown {
     100% { top: 0px; }
 }
@@ -184,13 +161,4 @@ div.notice span {
 
 @keyframes _slideup {
     100% { top: -60px; }
-}
-
-div.notice.slideup span {
-    top: 0px;
-    -webkit-animation: _slideup 0.3s ease-in alternate forwards;
-    -moz-animation: _slideup 0.3s ease-in alternate forwards;
-    -ms-animation: _slideup 0.3s ease-in alternate forwards;
-    -o-animation: _slideup 0.3s ease-in alternate forwards;
-    animation: _slideup 0.3s ease-in alternate forwards;
 }

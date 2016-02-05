@@ -11,9 +11,12 @@ describe('notesCtrl', function () {
         scope.note = 'Note 001';
         $q = _$q_;
         configMock = {
-            baseurl: 'http://foobar.com/walls',
-            api: 'api/v1',
-            instanceid: 8
+            baseurl: 'http://foobar.com/walls', api: 'api/v1',
+            instanceid: 8,
+            pollInterval: 10000,
+            messages: {
+                confirmDeleteNote: 'foo'
+            }
         };
         windowMock = {
             location: {
@@ -85,7 +88,7 @@ describe('notesCtrl', function () {
             expect(scope.notes.length).toEqual(scope.total);
         });
 
-        it('should call itself again after a 10s timeout', function () {
+        it('should call itself again after a timeout', function () {
             scope.$digest();
             spyOn(scope, 'getNotes');
             scope.getNotes();
@@ -107,14 +110,21 @@ describe('notesCtrl', function () {
             expect(angular.isFunction(scope.postNote)).toBe(true);
         });
 
-        it('should call getNotes', function () {
+        it('should call notesSrv postNote', function () {
             scope.$digest();
-            spyOn(scope, 'getNotes').and.callThrough();
-            scope.postNote('Note 001');
-            deferred.postNote.resolve();
+            spyOn(scope, 'postNote').and.callThrough();
+            scope.postNote({
+                note: 'Note 001',
+                xcoord: 50,
+                ycoord: 50
+            });
+            deferred.postNote.resolve({
+                notes: [],
+                total: 0
+            });
             scope.$digest();
-            expect(scope.getNotes).toHaveBeenCalled();
-            expect(scope.addingNote).toBe(false);
+            expect(scope.editingId).toBeNull();
+            expect(scope.postNote).toHaveBeenCalled();
         });
     });
 
@@ -126,29 +136,18 @@ describe('notesCtrl', function () {
         it('should call notesSrv putNote', function () {
             scope.$digest();
             spyOn(scope, 'putNote').and.callThrough();
-            scope.putNote(1, 'Note 001');
-            deferred.putNote.resolve();
+            scope.putNote({
+                note: 'Note 001',
+                xcoord: 50,
+                ycoord: 50
+            });
+            deferred.putNote.resolve({
+                notes: [],
+                total: 0
+            });
             scope.$digest();
             expect(scope.editingId).toBeNull();
             expect(scope.putNote).toHaveBeenCalled();
-        });
-
-        it('should call getNotes', function () {
-            scope.$digest();
-            spyOn(scope, 'getNotes').and.callThrough();
-            scope.putNote(1, 'Note 001');
-            deferred.putNote.resolve();
-            scope.$digest();
-            expect(scope.getNotes).toHaveBeenCalled();
-        });
-
-        it('should call getNotes when a reject is send back from the services', function () {
-            scope.$digest();
-            spyOn(scope, 'getNotes').and.callThrough();
-            scope.putNote(1, 'Note 001');
-            deferred.putNote.reject();
-            scope.$digest();
-            expect(scope.getNotes).toHaveBeenCalled();
         });
     });
 
@@ -161,7 +160,10 @@ describe('notesCtrl', function () {
             scope.$digest();
             spyOn(scope, 'deleteNote').and.callThrough();
             scope.deleteNote(1);
-            deferred.deleteNote.resolve();
+            deferred.deleteNote.resolve({
+                notes: [],
+                total: 0
+            });
             scope.$digest();
             expect(scope.deleteNote).toHaveBeenCalled();
         });
@@ -173,34 +175,21 @@ describe('notesCtrl', function () {
             expect(windowMock.confirm).toHaveBeenCalled();
         });
 
-        it('should call getNotes', function () {
-            scope.$digest();
-            spyOn(scope, 'getNotes').and.callThrough();
-            spyOn(windowMock, 'confirm').and.returnValue(true);
-            scope.deleteNote(1);
-            deferred.deleteNote.resolve();
-            scope.$digest();
-            expect(scope.getNotes).toHaveBeenCalled();
-        });
-
-        it('should set editingId to a value when startEditing is called', function () {
+        it('should set editingId to a value when startEditing() is called', function () {
             scope.$digest();
             expect(scope.editingId).toBe(null);
-            scope.startEditing({id: 1});
-            expect(scope.editingId).toEqual(1);
+            scope.startEditing(15);
+            expect(scope.editingId).toEqual(15);
         });
 
-        it('should set editingId to null and call getnotes', function () {
+        it('should set editingId to null when stopEditing() is called', function () {
             scope.$digest();
             scope.editingId = 1;
-            spyOn(scope, 'getNotes').and.callThrough();
             expect(scope.editingId).toEqual(1);
             scope.stopEditing();
             $timeout.flush(10000);
             expect(scope.editingId).toBe(null);
-            expect(scope.getNotes).toHaveBeenCalled();
         });
-
     });
 
     describe('method backToCommunityWalls', function () {

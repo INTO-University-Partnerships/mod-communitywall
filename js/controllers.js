@@ -50,7 +50,7 @@ app.controller('wallsCtrl', [
                     $scope.total = data.total;
                     $scope.timeoutPromise = $timeout(function () {
                         $scope.getPageOfWalls($scope.currentPage);
-                    }, 10000);
+                    }, config.pollInterval);
                 });
         };
 
@@ -67,7 +67,7 @@ app.controller('wallsCtrl', [
         };
 
         $scope.deleteWall = function (wallid) {
-            if (!$window.confirm('Are you sure?')) {
+            if (!$window.confirm(config.messages.confirmDeleteWall)) {
                 return;
             }
             wallsSrv.deleteWall(wallid).
@@ -85,63 +85,101 @@ app.controller('wallsCtrl', [
 app.controller('notesCtrl', [
     '$scope', '$timeout', '$window', 'notesSrv', 'CONFIG',
     function ($scope, $timeout, $window, notesSrv, config) {
-        $scope.notes = null;
-        $scope.total = null;
         $scope.baseurl = config.baseurl;
         $scope.canManage = config.canManage;
         $scope.isGuest = config.isGuest;
+        $scope.notes = null;
+        $scope.total = null;
         $scope.timeoutPromise = null;
         $scope.editingId = null;
         $scope.addingNote = false;
+        $scope.noteContainerDisabled = false;
 
-        $scope.startEditing = function (note) {
-            $scope.editingId = note.id;
-            // Stop the updating of notes
+        var stopTimeout = function () {
             $timeout.cancel($scope.timeoutPromise);
         };
 
-        $scope.stopEditing = function () {
+        var startTimeout = function () {
+            $timeout.cancel($scope.timeoutPromise);
+            $scope.timeoutPromise = $timeout($scope.getNotes, config.pollInterval);
+        };
+
+        $scope.startEditing = function (noteId) {
+            $scope.editingId = noteId;
+            stopTimeout();
+            $scope.$digest();
+        };
+
+        $scope.stopAdding = function (digest, event) {
+            if (typeof event !== 'undefined') {
+                event.stopPropagation();
+            }
+            $scope.addingNote = false;
+            if (digest) {
+                $scope.$digest();
+            }
+        };
+
+        $scope.stopEditing = function (event) {
+            if (typeof event !== 'undefined') {
+                event.stopPropagation();
+            }
             $scope.editingId = null;
-            $scope.timeoutPromise = $timeout($scope.getNotes, 10000);
+            startTimeout();
         };
 
         $scope.$on('startDragging', function () {
-            $timeout.cancel($scope.timeoutPromise);
+            stopTimeout();
         });
 
+        $scope.setNotes = function (data) {
+            $scope.notes = data.notes;
+            $scope.total = data.total;
+            startTimeout();
+            $scope.noteContainerDisabled = false;
+        };
+
         $scope.getNotes = function () {
-            $timeout.cancel($scope.timeoutPromise);
-            notesSrv.getNotes().
-                then(function (data) {
-                    $scope.notes = data.notes;
-                    $scope.total = data.total;
-                    $scope.timeoutPromise = $timeout($scope.getNotes, 10000);
-                });
+            stopTimeout();
+            $scope.noteContainerDisabled = true;
+            notesSrv.getNotes().then($scope.setNotes);
         };
 
-        $scope.postNote = function (note) {
-            $scope.note = '';
+        $scope.postNote = function (note, event) {
+            if (typeof event !== 'undefined') {
+                event.stopPropagation();
+            }
+            stopTimeout();
             $scope.addingNote = false;
-            notesSrv.postNote(note).
-                then(function () {
-                    $scope.getNotes();
-                });
+            $scope.noteContainerDisabled = true;
+            notesSrv.postNote({
+                note: note.note,
+                xcoord: note.xcoord,
+                ycoord: note.ycoord
+            }).then($scope.setNotes);
         };
 
-        $scope.putNote = function (noteid, note) {
+        $scope.putNote = function (note, event) {
+            if (typeof event !== 'undefined') {
+                event.stopPropagation();
+            }
+            stopTimeout();
             $scope.editingId = null;
-            notesSrv.putNote(noteid, note).finally(function () {
-                $scope.getNotes();
-            });
+            $scope.noteContainerDisabled = true;
+            notesSrv.putNote(note.id, note).then($scope.setNotes);
         };
 
-        $scope.deleteNote = function (noteid) {
-            if (!$window.confirm('Are you sure you want to delete this note?')) {
+        $scope.deleteNote = function (noteId, event) {
+            if (typeof event !== 'undefined') {
+                event.stopPropagation();
+            }
+            if (!$window.confirm(config.messages.confirmDeleteNote)) {
                 return;
             }
-            notesSrv.deleteNote(noteid).finally(function () {
-                $scope.getNotes();
-            });
+            stopTimeout();
+            $scope.editingId = null;
+            $scope.noteContainerDisabled = true;
+            notesSrv.deleteNote(noteId).then($scope.setNotes);
         };
 
         $scope.backToCommunityWalls = function () {

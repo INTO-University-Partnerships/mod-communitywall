@@ -31,8 +31,6 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
      * setUp
      */
     public function setUp() {
-        global $CFG;
-
         if (!defined('SLUG')) {
             define('SLUG', '');
         }
@@ -127,9 +125,9 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
         $client->request('GET', '/api/v1/wall/' . $this->_walls[0]->id, array(
                 'limitfrom' => 0,
                 'limitnum' => 2,
-            ), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
-            ));
+        ), array(), array(
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ));
         $this->assertTrue($client->getResponse()->isOk());
         $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
 
@@ -326,12 +324,11 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
     public function test_wall_post_note_existing_wall_route() {
         global $DB;
 
-        $time = $this->_app['now']();
         // create a comment to post
         $content = json_encode(array(
             'note' => 'Note 001',
-            'xcoord' => 0,
-            'ycoord' => 0
+            'xcoord' => 123,
+            'ycoord' => 456
         ));
 
         $client = new Client($this->_app);
@@ -340,15 +337,15 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
         ), $content);
 
         $this->assertTrue($client->getResponse()->isSuccessful());
-        $this->assertEquals(201, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals(1, $DB->count_records('communitywall_note', array('wallid' => 1)));
 
         $note = (array)$DB->get_record('communitywall_note', array(), 'wallid, note, xcoord, ycoord');
         $this->assertEquals(array(
             'wallid' => 1,
             'note' => 'Note 001',
-            'xcoord' => 0,
-            'ycoord' => 0,
+            'xcoord' => 123,
+            'ycoord' => 456,
         ), $note);
     }
 
@@ -379,7 +376,7 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
      * tests the route that posts a note as a guest to an existing wall
      */
     public function test_wall_post_note_as_guest_route() {
-        global $CFG, $DB;
+        global $DB;
 
         // login as guest
         $this->setGuestUser();
@@ -457,8 +454,6 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
      * tests to edit a note on a non existing wall
      */
     public function test_wall_put_note_non_existing_wall_route() {
-        global $DB;
-
         $now = time();
         $this->loadDataSet($this->createArrayDataSet(array(
             'communitywall_note' => array(
@@ -488,8 +483,6 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
      * tests to edit a non existing note
      */
     public function test_wall_put_non_existing_note() {
-        global $DB;
-
         $now = time();
         $this->loadDataSet($this->createArrayDataSet(array(
             'communitywall_note' => array(
@@ -507,8 +500,8 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
 
         $client = new Client($this->_app);
         $client->request('PUT', '/api/v1/wall/' . $this->_walls[0]->id . '/3/note/2', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
-            ), $content);
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ), $content);
 
         $this->assertTrue($client->getResponse()->isClientError());
         $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
@@ -538,8 +531,8 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
 
         $client = new Client($this->_app);
         $client->request('PUT', '/api/v1/wall/' . $this->_walls[0]->id . '/1/note/1', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
-            ), $content);
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ), $content);
 
         $this->assertTrue($client->getResponse()->isSuccessful());
         $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
@@ -610,7 +603,7 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
             ),
         )));
 
-        // create a comment to post
+        // create a note to put
         $content = json_encode(array(
             'note' => 'Note 002',
             'xcoord' => 10,
@@ -630,14 +623,13 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
             'xcoord' => 10,
             'ycoord' => 10
         ), $note);
-
     }
 
 
     /**
      * tests to edit an existing note without text
      */
-    public function test_wall_put_note_no_text_route() {
+    public function test_wall_put_note_no_text() {
         global $DB;
 
         $now = time();
@@ -648,7 +640,7 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
             ),
         )));
 
-        // create a comment to post
+        // create a note to put
         $content = json_encode(array(
             'xcoord' => 10,
             'ycoord' => 10
@@ -656,53 +648,87 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
 
         $client = new Client($this->_app);
         $client->request('PUT', '/api/v1/wall/' . $this->_walls[0]->id . '/1/note/1', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
-            ), $content);
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ), $content);
 
         $note = (array)$DB->get_record_sql('SELECT note, xcoord, ycoord FROM {communitywall_note} WHERE id = :id', array('id' => 1));
-        $this->assertTrue($client->getResponse()->isClientError());
+        $this->assertTrue($client->getResponse()->isOk());
         $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
-        $this->assertEquals(get_string('jsonapi:notemissing', $this->_app['plugin']), json_decode($client->getResponse()->getContent()));
-
         $this->assertEquals(array(
             'note' => 'Note 001',
-            'xcoord' => 0,
-            'ycoord' => 0
+            'xcoord' => 10,
+            'ycoord' => 10
         ), $note);
     }
 
     /**
      * tests to edit an existing note without coordinates
      */
-    public function test_wall_put_note_no_coordinates_route() {
+    public function test_wall_put_note_no_coordinates() {
         global $DB;
 
         $now = time();
         $this->loadDataSet($this->createArrayDataSet(array(
             'communitywall_note' => array(
                 array('id', 'wallid', 'userid', 'note', 'xcoord', 'ycoord', 'timecreated', 'timemodified'),
-                array(1, 1, $this->_user->id, 'Note 001', 0, 0, $now, $now),
+                array(1, 1, $this->_user->id, 'Note 001', 10, 10, $now, $now),
             ),
         )));
 
-        // create a comment to post
+        // create a note to put
         $content = json_encode(array(
             'note' => 'Note 002',
         ));
 
         $client = new Client($this->_app);
         $client->request('PUT', '/api/v1/wall/' . $this->_walls[0]->id . '/1/note/1', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
-            ), $content);
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ), $content);
 
-        $note = (array)$DB->get_record_sql('SELECT note FROM {communitywall_note} WHERE id = :id', array('id' => 1));
+        $note = (array)$DB->get_record_sql('SELECT note, xcoord, ycoord FROM {communitywall_note} WHERE id = :id', array('id' => 1));
+        $this->assertTrue($client->getResponse()->isOk());
+        $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
+        $this->assertEquals(array(
+            'note' => 'Note 002',
+            'xcoord' => 10,
+            'ycoord' => 10
+        ), $note);
+    }
+
+    /**
+     * tests to edit an existing note without text or coordinates
+     */
+    public function test_wall_put_note_neither_text_nor_coordinates() {
+        global $DB;
+
+        $now = time();
+        $this->loadDataSet($this->createArrayDataSet([
+            'communitywall_note' => [
+                ['id', 'wallid', 'userid', 'note', 'xcoord', 'ycoord', 'timecreated', 'timemodified'],
+                [1, 1, $this->_user->id, 'Note 001', 123, 456, $now, $now],
+            ],
+        ]));
+
+        // create a note to put
+        $content = json_encode([
+            'foo' => 'bar',
+        ]);
+
+        $client = new Client($this->_app);
+        $client->request('PUT', '/api/v1/wall/' . $this->_walls[0]->id . '/1/note/1', [], [], [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ], $content);
+
+        $note = (array)$DB->get_record_sql('SELECT note, xcoord, ycoord FROM {communitywall_note} WHERE id = :id', array('id' => 1));
         $this->assertTrue($client->getResponse()->isClientError());
         $this->assertEquals('application/json', $client->getResponse()->headers->get('Content-Type'));
-        $this->assertEquals(get_string('jsonapi:coordinatesmissing', $this->_app['plugin']), json_decode($client->getResponse()->getContent()));
+        $this->assertEquals(get_string('jsonapi:noteorcoordsmissing', $this->_app['plugin']), json_decode($client->getResponse()->getContent()));
 
-        $this->assertEquals(array(
-            'note' => 'Note 001'
-        ), $note);
+        $this->assertEquals([
+            'note'   => 'Note 001',
+            'xcoord' => 123,
+            'ycoord' => 456,
+        ], $note);
     }
 
     /**
@@ -722,7 +748,7 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
         $this->assertEquals(1, $DB->count_records('communitywall_note'));
         $client = new Client($this->_app);
         $client->request('DELETE', '/api/v1/wall/' . $this->_walls[0]->id . '/999/note/1', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
         ));
 
         $this->assertTrue($client->getResponse()->isClientError());
@@ -832,8 +858,8 @@ class mod_communitywall_v1_api_test extends advanced_testcase {
         $this->assertEquals(2, $DB->count_records('communitywall_note'));
         $client = new Client($this->_app);
         $client->request('DELETE', '/api/v1/wall/' . $this->_walls[0]->id . '/1/note/1', array(), array(), array(
-                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
-            ));
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'
+        ));
 
         $this->assertTrue($client->getResponse()->isSuccessful());
         $this->assertEquals(1, $DB->count_records('communitywall_note'));

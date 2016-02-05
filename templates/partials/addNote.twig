@@ -1,6 +1,6 @@
-<div ng-click="$event.stopPropagation()">
-    <textarea ng-model="note"></textarea>
+<div ng-click="$event.stopPropagation()" ng-keypress="onKeyPress($event)">
+    <textarea ng-model="noteText"></textarea>
     <div class="clearfix"></div>
-    <button ng-disabled="note.length == 0" ng-click="saveChanges({ note: note, xcoord: xcoord, ycoord: ycoord })">{{ trans('savechanges') }}</button>
-    <button ng-click="addingNote = false;">{{ trans('cancel') }}</button>
+    <button ng-disabled="noteText.length == 0" ng-click="saveChanges()({note: noteText, xcoord: xcoord, ycoord: ycoord})">{{ trans('savechanges') }}</button>
+    <button ng-click="stopAdding()(false); disappear();">{{ trans('cancel') }}</button>
 </div>

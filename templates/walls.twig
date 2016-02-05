@@ -50,7 +50,11 @@
         instanceid: {{ instance.id }},
         canManage: {{ can_manage ? 'true' : 'false' }},
         closed: {{ instance.closed ? 'true' : 'false' }},
-        isGuest: {{ is_guest ? 'true' : 'false' }}
+        isGuest: {{ is_guest ? 'true' : 'false' }},
+        pollInterval: 60000,
+        messages: {
+            'confirmDeleteWall': '{{ trans('confirm_delete_wall', plugin) }}'
+        }
     };
 </script>
 

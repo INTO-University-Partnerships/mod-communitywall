@@ -24,7 +24,7 @@ describe('notesSrv', function () {
     });
 
     describe('method getNotes', function () {
-        it('shoud exist', function () {
+        it('should exist', function () {
             expect(angular.isFunction(srv.getNotes)).toBe(true);
         });
 

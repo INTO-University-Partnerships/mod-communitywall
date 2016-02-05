@@ -113,7 +113,7 @@ $controller->delete('/wall/{instanceid}/{wallid}', function ($instanceid, $walli
 
 // get all notes
 $controller->get('/wall/{instanceid}/{wallid}/note', function(Request $request, $instanceid, $wallid) use ($app) {
-    global $DB, $USER, $OUTPUT;
+    global $DB, $USER;
 
     // require course login
     list($course, $cm) = $app['get_course_and_course_module']($instanceid);
@@ -132,41 +132,43 @@ $controller->get('/wall/{instanceid}/{wallid}/note', function(Request $request, 
     $communitywall_note_model = new communitywall_note_model();
     $communitywall_note_model->set_userid($USER->id);
 
-    $total = $communitywall_note_model->get_total_by_wallid($wallid);
-    $notes = $communitywall_note_model->get_all_by_wallid($wallid);
+    return $app->json((object)$app['get_all_notes']($communitywall_note_model, $wallid));
+})
+->assert('instanceid', '\d+')
+->assert('wallid', '\d+');
 
-    foreach($notes as $key => $note) {
-        // Convert URLs without http (but with www.) to have http://
-        $notes[$key]['note'] = preg_replace('#(^|\s)(www.[^\s]*)#', "$1http://$2", $note['note']);
-        // Create userpicture
-        $notes[$key]['userpicture'] = $OUTPUT->user_picture((object)array(
-            'id' => $note['userid'],
-            'picture' => $note['picture'],
-            'firstname' => $note['firstname'],
-            'lastname' => $note['lastname'],
-            'firstnamephonetic' => $note['firstnamephonetic'],
-            'lastnamephonetic' => $note['lastnamephonetic'],
-            'middlename' => $note['middlename'],
-            'alternatename' => $note['alternatename'],
-            'imagealt' => $note['userfullname'],
-            'email' => $note['email']
-        ), array(
-            'size' => 40,
-            'link' => false
-        ));
-        foreach (array('picture', 'firstname', 'lastname', 'email', 'firstnamephonetic', 'lastnamephonetic', 'middlename', 'alternatename') as $exclude_from_json) {
-            unset($notes[$key][$exclude_from_json]);
-        }
+// get one note's text
+$controller->get('/wall/{instanceid}/{wallid}/note/text/{noteid}', function($instanceid, $wallid, $noteid) use ($app) {
+    global $DB, $USER;
+
+    // require course login
+    list($course, $cm) = $app['get_course_and_course_module']($instanceid);
+    $app['require_course_login']($course, $cm);
+
+    // see whether the wall actually exists
+    if (!$DB->record_exists('communitywall_wall', [
+        'instanceid' => $instanceid,
+        'id'         => $wallid,
+    ])) {
+        return $app->json(get_string('jsonapi:walldoesntexist', $app['plugin']), 404);
     }
 
-    // return JSON response
-    return $app->json((object)array(
-        'notes' => $notes,
-        'total' => $total
-    ));
+    // see whether the note actually exists
+    if (!$DB->record_exists('communitywall_note', [
+        'wallid' => $wallid,
+        'id'     => $noteid,
+    ])) {
+        return $app->json(get_string('jsonapi:notedoesntexist', $app['plugin']), 404);
+    }
+
+    require_once __DIR__ . '/../models/communitywall_note_model.php';
+    $communitywall_note_model = new communitywall_note_model();
+    $communitywall_note_model->set_userid($USER->id);
+    $note = $communitywall_note_model->get($noteid);
+    return $app->json($note['note']);
 })
-    ->assert('instanceid', '\d+')
-    ->assert('wallid', '\d+');
+->assert('instanceid', '\d+')
+->assert('wallid', '\d+');
 
 // create one note
 $controller->post('/wall/{instanceid}/{wallid}/note', function(Request $request, $instanceid, $wallid) use ($app) {
@@ -213,13 +215,13 @@ $controller->post('/wall/{instanceid}/{wallid}/note', function(Request $request,
 
     $communitywall_note_model->save($data, $app['now']());
 
-    return $app->json('', 201);
+    return $app->json((object)$app['get_all_notes']($communitywall_note_model, $wallid));
 })
-    ->assert('instanceid', '\d+')
-    ->assert('wallid', '\d+');
+->assert('instanceid', '\d+')
+->assert('wallid', '\d+');
 
 // update one note
-$controller->put('/wall/{instanceid}/{wallid}/note/{noteid}', function(Request $request, $instanceid, $wallid, $noteid) use($app) {
+$controller->put('/wall/{instanceid}/{wallid}/note/{noteid}', function(Request $request, $instanceid, $wallid, $noteid) use ($app) {
     global $DB, $USER;
 
     // require course login
@@ -255,29 +257,26 @@ $controller->put('/wall/{instanceid}/{wallid}/note/{noteid}', function(Request $
         return $app->json(get_string('jsonapi:notownerofnote', $app['plugin']), 403);
     }
 
+    // must specify either note text, or coords (or both)
     $uploaded = (array)json_decode($request->getContent());
-    if (!array_key_exists('note', $uploaded)) {
-        return $app->json(get_string('jsonapi:notemissing', $app['plugin']), 400);
+    if (!(array_key_exists('note', $uploaded) || (array_key_exists('xcoord', $uploaded) && array_key_exists('ycoord', $uploaded)))) {
+        return $app->json(get_string('jsonapi:noteorcoordsmissing', $app['plugin']), 400);
     }
 
-    if (!array_key_exists('xcoord', $uploaded) || !array_key_exists('ycoord', $uploaded)) {
-        return $app->json(get_string('jsonapi:coordinatesmissing', $app['plugin']), 400);
-    }
-
-    $data = array(
-        'id' => $noteid,
-        'note' => $uploaded['note'],
-        'xcoord' => $uploaded['xcoord'],
-        'ycoord' => $uploaded['ycoord']
-    );
+    $data = [
+        'id'     => $noteid,
+        'note'   => array_key_exists('note',   $uploaded) ? $uploaded['note']   : $note['note'],
+        'xcoord' => array_key_exists('xcoord', $uploaded) ? $uploaded['xcoord'] : $note['xcoord'],
+        'ycoord' => array_key_exists('ycoord', $uploaded) ? $uploaded['ycoord'] : $note['ycoord'],
+    ];
 
     $communitywall_note_model->save($data, $app['now']());
 
-    return $app->json('', 200);
+    return $app->json((object)$app['get_all_notes']($communitywall_note_model, $wallid));
 })
-    ->assert('instanceid', '\d+')
-    ->assert('wallid', '\d+')
-    ->assert('noteid', '\d+');
+->assert('instanceid', '\d+')
+->assert('wallid', '\d+')
+->assert('noteid', '\d+');
 
 // delete one note
 $controller->delete('/wall/{instanceid}/{wallid}/note/{noteid}', function(Request $request, $instanceid, $wallid, $noteid) use($app) {
@@ -317,10 +316,11 @@ $controller->delete('/wall/{instanceid}/{wallid}/note/{noteid}', function(Reques
 
     $communitywall_note_model->delete($noteid);
 
-    return $app->json('', 204);
+    return $app->json((object)$app['get_all_notes']($communitywall_note_model, $wallid));
 })
-    ->assert('instanceid', '\d+')
-    ->assert('wallid', '\d+')
-    ->assert('noteid', '\d+');
+->assert('instanceid', '\d+')
+->assert('wallid', '\d+')
+->assert('noteid', '\d+');
+
 // return the controller
 return $controller;

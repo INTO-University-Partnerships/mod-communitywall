@@ -1,13 +1,12 @@
 'use strict';
 
 describe('addNote', function () {
-    var config, element, scope, $timeout;
+    var config, element, scope;
 
     beforeEach(function () {
         config = {
             baseurl: ''
         };
-
     });
 
     beforeEach(angular.mock.module('wallsApp.directives', ['$provide',
@@ -15,10 +14,6 @@ describe('addNote', function () {
             $provide.value('CONFIG', config);
         }
     ]));
-
-    beforeEach(inject(function (_$timeout_) {
-        $timeout = _$timeout_;
-    }));
 
     describe('general behaviour', function () {
         beforeEach(inject(function ($rootScope, $compile) {
@@ -34,38 +29,11 @@ describe('addNote', function () {
             element = $compile(angular.element(html))(scope);
         }));
 
-        it('should broadcast $event after two clicks', function () {
-            scope.$digest();
-            spyOn(scope, '$broadcast');
-            expect(scope.clicks).toBe(0);
-            element.click();
-            expect(scope.clicks).toBe(1);
-            element.click();
-            expect(scope.$broadcast).toHaveBeenCalled();
-        });
-
-        it('should set the variable clicks to 0 after x milliseconds', function () {
-            scope.$digest();
-            element.click();
-            expect(scope.clicks).toBe(1);
-            $timeout.flush(300);
-            expect(scope.clicks).toBe(0);
-        });
-
-        it('should broadcast $event on single click', function () {
+        it('should broadcast $event on click', function () {
             scope.$digest();
             spyOn(scope, '$broadcast');
             element.click();
             expect(scope.$broadcast).toHaveBeenCalled();
-        });
-
-        it('should trigger addClass when mouseover element after x seconds', function () {
-            scope.$digest();
-            $timeout.flush(2000);
-            expect(scope.slideUp).toBe(false);
-            scope.$digest();
-            element.trigger('mouseover');
-            expect(scope.slideUp).toBe(true);
         });
     });
 });

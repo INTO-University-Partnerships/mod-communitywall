@@ -2,6 +2,27 @@
 
 var app = angular.module('wallsApp.directives', []);
 
+var KEY_CODE_ESCAPE = 27;
+
+/**
+ * randomize coordinates relative to the top-left of the community wall note container
+ * @returns {object}
+ */
+var getRandomCoords = function () {
+    var o = {x: 0, y: 0};
+    var containerElems = document.getElementsByClassName('communitywall-note-container');
+    if (containerElems && containerElems.length) {
+        var containerDOMRect = containerElems[0].getBoundingClientRect();
+        var addNoteElems = document.getElementsByClassName('add-note');
+        if (addNoteElems && addNoteElems.length) {
+            var addNoteDOMRect = addNoteElems[0].getBoundingClientRect();
+            o.x = Math.floor((containerDOMRect.width - addNoteDOMRect.width) * Math.random());
+            o.y = Math.floor((containerDOMRect.height - addNoteDOMRect.height) * Math.random());
+        }
+    }
+    return o;
+};
+
 app.directive('wallListItem', ['CONFIG',
     function (config) {
         return {
@@ -18,203 +39,220 @@ app.directive('wallListItem', ['CONFIG',
     }
 ]);
 
-app.directive('communitywallNoteContainer', ['CONFIG', '$rootScope', '$timeout',
-    function (config, $rootScope, $timeout) {
+app.directive('communitywallNoteContainer', [
+    function () {
         return {
             restrict: 'A',
             link: function (scope, element) {
-                scope.clicks = 0;
-                scope.timer = null;
-
                 element.bind('click', function ($event) {
-                    scope.clicks++;
-                    if (scope.clicks === 1) {
-                        scope.timer = $timeout(function () {
-                            scope.clicks = 0;
-                        }, 300);
-                    }
-
-                    // if clicks === 0, that means there is a doubleclick which should invoke the doubleclick event
-                    if (scope.clicks === 2) {
-                        scope.addingNote = true;
-                        scope.$broadcast('sendDblClickEvent', $event);
-                        clearTimeout(scope.timer);
-                        scope.clicks = 0;
-                    } else {
-                        scope.$broadcast('sendClickEvent', $event);
-                    }
-                    scope.$digest();
+                    scope.$broadcast('containerClicked', $event);
                 });
-
-                scope.slideUp = false;
-                $timeout(function () {
-                    element.bind('mouseover', function () {
-                        scope.slideUp = true;
-                        scope.$digest();
-                    });
-                }, 2000);
             }
         };
     }
 ]);
 
-app.directive('addNote', ['CONFIG',
-    function (config) {
+app.directive('addNote', ['CONFIG', '$timeout',
+    function (config, $timeout) {
         return {
             restrict: 'E',
             scope: {
                 saveChanges: '&',
-                note: '=',
-                addingNote: '='
+                stopAdding: '&',
+                addingNote: '=',
+                isGuest: '='
             },
             link: function (scope, element) {
-                // Set focus to textarea
-                scope.$watch(function () { return element.is(':visible'); }, function () {
-                    scope.note = '';
-                    element.find('textarea')[0].focus();
-                });
+                // appear/disappear with opacity
+                scope.disappear = function () {
+                    element.find('div').parent().css('opacity', 0.0);
+                };
+                scope.appear = function () {
+                    element.find('div').parent().css('opacity', 1.0);
+                };
+                scope.disappear();
 
-                // Receive doubleClickEvent which should display the 'addNote' element on the clicked position
-                scope.$on('sendDblClickEvent', function (s, $event) {
-                    scope.xcoord = $event.originalEvent.pageX;
-                    scope.ycoord = $event.originalEvent.pageY;
-                    // Not all browsers support pageX and pageY
-                    if (typeof scope.xcoord === 'undefined' && typeof scope.ycoord === 'undefined') {
-                        scope.xcoord = $event.clientX;
-                        scope.ycoord = $event.clientY;
+                // display the 'addNote' element in a random position
+                scope.$watch('addingNote', function (newValue, oldValue) {
+                    if (!(newValue === true && oldValue === false)) {
+                        return;
                     }
-                    // Element should be positioned relative to container + substract 12px (10px padding and 2px border)
-                    scope.xcoord -= element.closest('.communitywall-note-container').offset().left + 12;
-                    scope.ycoord -= element.closest('.communitywall-note-container').offset().top + 12;
-                    // Set the actual element to the clicked position
-                    element.css({
-                        top: scope.ycoord + 'px',
-                        left: scope.xcoord + 'px'
-                    });
+
+                    // immediately set actual note text to the empty string
+                    scope.noteText = '';
+
+                    // wait an instant before setting coordinates (otherwise bounding rect has area of 0)
+                    $timeout(function () {
+                        // randomize coordinates
+                        var o = getRandomCoords();
+                        scope.xcoord = o.x;
+                        scope.ycoord = o.y;
+
+                        // Set the actual element to the clicked position
+                        element.css({
+                            top: scope.ycoord + 'px',
+                            left: scope.xcoord + 'px'
+                        });
+
+                        // set focus to text area
+                        element.find('textarea')[0].focus();
+                        scope.appear();
+                    }, 1);
                 });
 
-                // Receive clickEvent,
-                // Save and hide
-                scope.$on('sendClickEvent', function () {
+                // save and hide
+                scope.$on('containerClicked', function () {
                     if (scope.addingNote === false) {
                         return;
                     }
-                    // (saving note if not empty)
-                    if (scope.note.length !== 0) {
-                        scope.saveChanges({
-                            note: scope.note,
+
+                    // save note if not empty
+                    if (!!scope.noteText.length) {
+                        scope.saveChanges()({
+                            note: scope.noteText,
                             xcoord: scope.xcoord,
                             ycoord: scope.ycoord
                         });
                     }
-                    scope.addingNote = false;
-                    scope.$digest();
+
+                    scope.stopAdding()(true);
+                    scope.disappear();
                 });
+
+                // key press
+                scope.onKeyPress = function (event) {
+                    if (event.keyCode === KEY_CODE_ESCAPE) {
+                        scope.stopAdding()(false);
+                        scope.disappear();
+                    }
+                };
             },
             templateUrl: config.baseurl + '/partials/addNote.twig'
         };
     }
 ]);
 
-app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope',
-    function (config, $timeout, $rootScope) {
+app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv',
+    function (config, $timeout, $rootScope, notesSrv) {
         return {
             restrict: 'E',
             scope: {
                 canManage: '=',
                 dragging: '=',
-                isEditing: '=',
+                editingId: '=',
                 startEditing: '&',
                 stopEditing: '&',
                 saveChanges: '&',
                 deleteNote: '&',
                 note: '=',
                 ngTitle: '='
-
             },
             link: function (scope, element) {
-                scope.clicks = 0;
-                scope.timer = null;
-
-                scope.tempNote = angular.copy(scope.note);
-
                 element.attr('title', scope.ngTitle);
+                scope.temporarilyIgnoreClicks = false;
 
-                // Initial position
+                // focus handler
+                var textarea = element.find('textarea');
+                textarea.focus(function () {
+                    var l = scope.note.note.length;
+                    this.setSelectionRange(l, l);
+                    return false;
+                }).mouseup(function () {
+                    return false;
+                });
+
+                // initial position
                 element.css({
                     top: scope.note.ycoord + 'px',
                     left: scope.note.xcoord + 'px',
                     zIndex: scope.note.id
                 });
 
-                // Set focus to textarea
-                scope.$watch('isEditing', function (newValue) {
-                    if (!newValue) {
+                // watch editingId
+                scope.$watch('editingId', function (newValue, oldValue) {
+                    // save changes if a new note has been clicked
+                    if (!!newValue && !!oldValue && newValue !== oldValue && oldValue === scope.note.id) {
+                        notesSrv.putNote(scope.note.id, {
+                            note: scope.note.note
+                        });
                         return;
                     }
-                    $timeout(function () {
-                        // Get textarea length to set caret to end of the field
-                        var textarea = element.find('textarea');
-                        var l = textarea.val().length;
-                        textarea[0].focus();
-                        textarea[0].setSelectionRange(l, l);
-                    }, 1);
-                });
 
-                // Stop editing when user clicks outside the element (only when user is actually editing)
-                scope.$on('sendClickEvent', function () {
-                    if (scope.isEditing === true) {
-                        if (angular.equals(scope.tempNote, scope.note)) {
-                            return scope.stopEditing();
-                        }
-                        scope.saveChanges({
-                            id: scope.note.id,
-                            note: scope.note.note,
-                            xcoord: scope.note.xcoord,
-                            ycoord: scope.note.ycoord
+                    // set focus to textarea
+                    if (!!newValue && newValue === scope.note.id) {
+                        scope.editingDisabled = true;
+                        notesSrv.getNoteText(scope.note.id).then(function (data) {
+                            scope.editingDisabled = false;
+                            scope.initialNoteText = scope.note.note = data;
+                            $timeout(function () {
+                                textarea.focus();
+                            }, 1);
                         });
                     }
                 });
 
+                // save changes when user clicks the container (only when user is actually editing)
+                scope.$on('containerClicked', function () {
+                    if (scope.editingId === scope.note.id) {
+                        scope.saveChanges()({
+                            id: scope.note.id,
+                            note: scope.note.note
+                        });
+                    }
+                });
+
+                // click
                 element.bind('click', function ($event) {
-                    scope.clicks++;
-                    if (scope.clicks === 1) {
-                        scope.timer = $timeout(function () {
-                            scope.clicks = 0;
-                        }, 300);
-                    }
-
-                    // if clicks === 2, it is a doubleclick so invoke startEditing,
-                    // if the user is also the owner or admin
-                    if (scope.clicks === 2 && (scope.note.is_owner || scope.canManage)) {
-                        clearTimeout(scope.timer);
-                        scope.clicks = 0;
-                        scope.startEditing();
-                        scope.$digest();
-                    }
-
                     $event.stopPropagation();
-                });
 
-                // While dragging timeout should be stopped so no updates are triggered
-                element.bind('dragstart', function ($event) {
-                    // Prevent dragging if the note is currently in edit mode
-                    if (scope.isEditing === true) {
-                        return $event.preventDefault();
+                    if (scope.temporarilyIgnoreClicks) {
+                        return;
                     }
-                    $rootScope.$broadcast('startDragging');
-                }).bind('dragstop', function () {
-                    // When stop dragging, the new location should be saved
-                    scope.note.xcoord = angular.element(element).position().left || 0;
-                    scope.note.ycoord = angular.element(element).position().top || 0;
-                    scope.saveChanges({
-                        id: scope.note.id,
-                        note: scope.note.note,
-                        xcoord: scope.note.xcoord,
-                        ycoord: scope.note.ycoord
-                    });
+
+                    if (scope.editingId === scope.note.id) {
+                        return;
+                    }
+
+                    // if the user is also the owner or admin
+                    if (scope.note.is_owner || scope.canManage) {
+                        scope.startEditing()(scope.note.id);
+                    }
                 });
 
+                // start dragging
+                element.bind('dragstart', function ($event) {
+                    // prevent dragging if any note is currently in edit mode
+                    if (scope.editingId !== null) {
+                        $event.preventDefault();
+                        return;
+                    }
+
+                    $rootScope.$broadcast('startDragging');
+                });
+
+                // drop dragging
+                element.bind('dragstop', function () {
+                    // after dragging, save new location
+                    scope.saveChanges()({
+                        id: scope.note.id,
+                        xcoord: angular.element(element).position().left || 0,
+                        ycoord: angular.element(element).position().top || 0
+                    });
+
+                    // temporarily ignore clicks immediately after dragging
+                    scope.temporarilyIgnoreClicks = true;
+                    $timeout(function () {
+                        scope.temporarilyIgnoreClicks = false;
+                    }, 100);
+                });
+
+                // key press
+                scope.onKeyPress = function (event) {
+                    if (event.keyCode === KEY_CODE_ESCAPE) {
+                        scope.note.note = scope.initialNoteText;
+                        scope.stopEditing()();
+                    }
+                };
             },
             templateUrl: config.baseurl + '/partials/viewNote.twig'
         };

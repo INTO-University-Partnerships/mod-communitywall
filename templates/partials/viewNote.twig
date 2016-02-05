@@ -1,16 +1,20 @@
 <div>
     <span class="userpicture" ng-bind-html="note.userpicture"></span>
     <div>
-        <div ng-show="isEditing" class="input">
+        <div ng-show="editingId === note.id" ng-keypress="onKeyPress($event)" ng-class="{'disabled': editingDisabled}" class="input">
             <textarea ng-model="note.note"></textarea>
             <div class="clearfix"></div>
-            <button ng-disabled="note.note.length == 0" ng-click="saveChanges({ id: note.id, note: note.note, xcoord: note.xcoord, ycoord: note.ycoord })">{{ trans('savechanges') }}</button>
-            <button ng-click="stopEditing()">{{ trans('cancel') }}</button>
-            <button ng-click="deleteNote(note.id)">{{ trans('delete') }}</button>
+            <button ng-disabled="note.note.length == 0" ng-click="saveChanges()({id: note.id, note: note.note}, $event)">{{ trans('savechanges') }}</button>
+            <button ng-click="note.note = initialNoteText; stopEditing()($event)">{{ trans('cancel') }}</button>
+            <button ng-click="deleteNote()(note.id, $event)">{{ trans('delete') }}</button>
         </div>
-        <div ng-hide="isEditing" class="output">
-            <span class="username" ng-bind="note.userfullname"></span>
-            <span class="note" ng-bind-html="note.note | linky:'_blank'"></span>
+        <div ng-show="editingId !== note.id" class="output">
+            <a ng-show="note.is_owner || canManage" href="javascript:;">
+                <span class="username" ng-bind="note.userfullname"></span>
+                <span class="note" ng-bind-html="note.note | linky:'_blank'"></span>
+            </a>
+            <span ng-show="!(note.is_owner || canManage)" class="username" ng-bind="note.userfullname"></span>
+            <span ng-show="!(note.is_owner || canManage)" class="note" ng-bind-html="note.note | linky:'_blank'"></span>
         </div>
     </div>
 </div>

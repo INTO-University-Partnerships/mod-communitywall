@@ -12,7 +12,11 @@ describe('wallsCtrl', function () {
             baseurl: 'http://foobar.com/walls',
             api: 'api/v1',
             instanceid: 8,
-            canManage: true
+            canManage: true,
+            pollInterval: 10000,
+            messages: {
+                confirmDeleteWall: 'foo'
+            }
         };
         windowMock = {
             location: {

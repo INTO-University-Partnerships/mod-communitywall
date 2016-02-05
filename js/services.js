@@ -51,6 +51,18 @@ app.service('notesSrv', [
             return deferred.promise;
         };
 
+        this.getNoteText = function (noteid) {
+            var deferred = $q.defer();
+            $http.get(url + '/text/' + noteid).
+                success(function (data) {
+                    deferred.resolve(data);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+            return deferred.promise;
+        };
+
         this.postNote = function (note) {
             var deferred = $q.defer();
             $http.post(url, note).
