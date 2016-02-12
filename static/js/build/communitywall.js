@@ -401,8 +401,6 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv', funct
 
             // click
             element.bind('click', function ($event) {
-                console.info('INTO: viewNote::click');
-
                 $event.stopPropagation();
 
                 if (scope.temporarilyIgnoreClicks) {

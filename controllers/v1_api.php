@@ -304,6 +304,7 @@ $controller->delete('/wall/{instanceid}/{wallid}/note/{noteid}', function(Reques
 
     require_once __DIR__ . '/../models/communitywall_note_model.php';
     $communitywall_note_model = new communitywall_note_model();
+    $communitywall_note_model->set_userid($USER->id);
     $note = $communitywall_note_model->get($noteid);
 
     // get module context

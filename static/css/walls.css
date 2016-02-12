@@ -39,7 +39,7 @@ span.right {
 .add-note {
     position: absolute;
     margin: 10px;
-    border:2px solid transparent;
+    border: 2px solid transparent;
     max-width: 500px;
 }
 
@@ -53,14 +53,14 @@ span.right {
 .view-note.active,
 .view-note:hover,
 .add-note {
-    z-index: 100000!important;
+    z-index: 999!important;
 }
 
 .view-note > div,
 .add-note > div {
     position: relative;
     float: left;
-    clear:both;
+    clear: both;
     min-height: 40px;
     min-width: 100px;
     max-width: 100%;
