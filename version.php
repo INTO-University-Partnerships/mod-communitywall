@@ -2,6 +2,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2014031800;
-$module->requires  = 2013051402; // @todo
-$module->component = 'mod_communitywall';
+$plugin->version   = 2014031800;
+$plugin->requires  = 2015051107;
+$plugin->component = 'mod_communitywall';
