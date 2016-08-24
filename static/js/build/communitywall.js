@@ -100,6 +100,7 @@ app.controller('wallsCtrl', ['$scope', '$timeout', '$window', 'wallsSrv', 'CONFI
 app.controller('notesCtrl', ['$scope', '$timeout', '$window', 'notesSrv', 'CONFIG', function ($scope, $timeout, $window, notesSrv, config) {
     $scope.baseurl = config.baseurl;
     $scope.canManage = config.canManage;
+    $scope.closed = config.closed;
     $scope.isGuest = config.isGuest;
     $scope.notes = null;
     $scope.total = null;
@@ -235,6 +236,7 @@ app.directive('wallListItem', ['CONFIG', function (config) {
             wall: '=',
             baseurl: '@',
             canManage: '@',
+            closed: '@',
             editT: '&',
             deleteT: '&'
         },
@@ -336,7 +338,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv', funct
         restrict: 'E',
         scope: {
             canManage: '=',
-            dragging: '=',
+            closed: '=',
             editingId: '=',
             startEditing: '&',
             stopEditing: '&',
@@ -412,7 +414,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv', funct
                 }
 
                 // if the user is also the owner or admin
-                if (scope.note.is_owner || scope.canManage) {
+                if (scope.note.is_owner && !scope.closed || scope.canManage) {
                     scope.startEditing()(scope.note.id);
                 }
             });

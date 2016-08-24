@@ -9,12 +9,12 @@
             <button ng-click="deleteNote()(note.id, $event)">{{ trans('delete') }}</button>
         </div>
         <div ng-show="editingId !== note.id" class="output">
-            <a ng-show="note.is_owner || canManage" href="javascript:;">
+            <a ng-show="(note.is_owner && !closed) || canManage" href="javascript:;">
                 <span class="username" ng-bind="note.userfullname"></span>
                 <span class="note" ng-bind-html="note.note | linky:'_blank'"></span>
             </a>
-            <span ng-show="!(note.is_owner || canManage)" class="username" ng-bind="note.userfullname"></span>
-            <span ng-show="!(note.is_owner || canManage)" class="note" ng-bind-html="note.note | linky:'_blank'"></span>
+            <span ng-show="!((note.is_owner && !closed) || canManage)" class="username" ng-bind="note.userfullname"></span>
+            <span ng-show="!((note.is_owner && !closed) || canManage)" class="note" ng-bind-html="note.note | linky:'_blank'"></span>
         </div>
     </div>
 </div>

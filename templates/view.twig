@@ -17,18 +17,19 @@
             ng-repeat="note in notes"
             note="note"
             can-manage="canManage"
+            closed="closed"
             editing-id="editingId"
             start-editing="startEditing"
             stop-editing="stopEditing"
             delete-note="deleteNote"
             save-changes="putNote"
             ng-class="{true: 'active', false: ''}[editingId == note.id]"
-            ng-title="{true: '{{ trans('click_to_edit', plugin) }}', false: ''}[note.is_owner || canManage]"
+            ng-title="{true: '{{ trans('click_to_edit', plugin) }}', false: ''}[(note.is_owner && !closed) || canManage]"
             class="view-note"
             jqyoui-draggable
             data-jqyoui-options="{containment: 'parent'}"
             ng-style="{'z-index': $index}"
-            data-drag="note.is_owner || canManage">
+            data-drag="(note.is_owner && !closed) || canManage">
         </view-note>
 
         <add-note
@@ -43,7 +44,7 @@
 
     <div class="main-buttons">
         <button ng-click="backToCommunityWalls()">{{ trans('backtocommunitywalls', plugin) }}</button>
-        <button ng-click="addingNote = true;" ng-disabled="addingNote" ng-hide="isGuest">{{ trans('post_note', plugin) }}</button>
+        <button ng-click="addingNote = true;" ng-disabled="addingNote" ng-hide="isGuest || (closed && !canManage)">{{ trans('post_note', plugin) }}</button>
     </div>
 
 </div>
@@ -54,6 +55,7 @@
         instanceid: '{{ wall.instanceid }}',
         wallid: {{ wall.id}},
         canManage: {{ can_manage ? 'true' : 'false' }},
+        closed: {{ instance.closed ? 'true' : 'false' }},
         isGuest: {{ is_guest ? 'true' : 'false' }},
         pollInterval: 60000,
         messages: {

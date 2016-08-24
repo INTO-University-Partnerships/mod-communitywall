@@ -31,6 +31,7 @@ app.directive('wallListItem', ['CONFIG',
                 wall: '=',
                 baseurl: '@',
                 canManage: '@',
+                closed: '@',
                 editT: '&',
                 deleteT: '&'
             },
@@ -138,7 +139,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv',
             restrict: 'E',
             scope: {
                 canManage: '=',
-                dragging: '=',
+                closed: '=',
                 editingId: '=',
                 startEditing: '&',
                 stopEditing: '&',
@@ -214,7 +215,7 @@ app.directive('viewNote', ['CONFIG', '$timeout', '$rootScope', 'notesSrv',
                     }
 
                     // if the user is also the owner or admin
-                    if (scope.note.is_owner || scope.canManage) {
+                    if ((scope.note.is_owner && !scope.closed) || scope.canManage) {
                         scope.startEditing()(scope.note.id);
                     }
                 });

@@ -87,6 +87,7 @@ app.controller('notesCtrl', [
     function ($scope, $timeout, $window, notesSrv, config) {
         $scope.baseurl = config.baseurl;
         $scope.canManage = config.canManage;
+        $scope.closed = config.closed;
         $scope.isGuest = config.isGuest;
         $scope.notes = null;
         $scope.total = null;
