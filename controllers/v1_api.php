@@ -215,6 +215,13 @@ $controller->post('/wall/{instanceid}/{wallid}/note', function(Request $request,
 
     $communitywall_note_model->save($data, $app['now']());
 
+    // completion
+    $completionpostonwall = $DB->get_field('communitywall', 'completionpostonwall', ['id' => $instanceid], MUST_EXIST);
+    $completion = new completion_info($course);
+    if ($completion->is_enabled($cm) && !empty($completionpostonwall)) {
+        $completion->update_state($cm, COMPLETION_COMPLETE);
+    }
+
     return $app->json((object)$app['get_all_notes']($communitywall_note_model, $wallid));
 })
 ->assert('instanceid', '\d+')

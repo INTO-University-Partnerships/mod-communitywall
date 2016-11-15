@@ -60,6 +60,13 @@ $controller->match('/{instanceid}/add', function (Request $request, $instanceid)
             $communitywall_model = new communitywall_model();
             $data = $communitywall_model->save($data, $app['now']());
 
+            // completion
+            $completioncreatewall = $DB->get_field('communitywall', 'completioncreatewall', ['id' => $instanceid], MUST_EXIST);
+            $completion = new completion_info($course);
+            if ($completion->is_enabled($cm) && !empty($completioncreatewall)) {
+                $completion->update_state($cm, COMPLETION_COMPLETE);
+            }
+
             // redirect to the new wall itself
             return $app->redirect($CFG->wwwroot . SLUG . $app['url_generator']->generate('wall', array(
                 'id' => $data['id'],

@@ -64,7 +64,7 @@ function communitywall_supports($feature) {
         FEATURE_ADVANCED_GRADING => false,
         FEATURE_CONTROLS_GRADE_VISIBILITY => false,
         FEATURE_PLAGIARISM => false,
-        FEATURE_COMPLETION_HAS_RULES => false,
+        FEATURE_COMPLETION_HAS_RULES => true,
         FEATURE_NO_VIEW_LINK => false,
         FEATURE_IDNUMBER => false,
         FEATURE_GROUPS => true,
@@ -81,4 +81,48 @@ function communitywall_supports($feature) {
         return null;
     }
     return $support[$feature];
+}
+
+/**
+ * Obtains the automatic completion state for this community wall based on any conditions
+ * in community wall settings.
+ *
+ * @param object $course
+ * @param object $cm
+ * @param int $userid
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool whether completed
+ */
+function communitywall_get_completion_state($course, $cm, $userid, $type) {
+    global $DB;
+    $wall = $DB->get_record('communitywall', ['id' => $cm->instance], '*', MUST_EXIST);
+
+    $notes_sql = <<< SQL
+        SELECT wn.id, wn.note
+        FROM {communitywall_note} wn
+        INNER JOIN {communitywall_wall} cw ON cw.id = wn.wallid
+        WHERE cw.instanceid = ?
+            AND wn.userid = ?
+            AND cw.userid != ?
+SQL;
+    $notes = $DB->get_records_sql($notes_sql, [$wall->id, $userid, $userid]);
+
+    $walls_sql = <<<SQL
+        SELECT cw.id, cw.title
+        FROM {communitywall_wall} cw
+        WHERE cw.instanceid = ?
+            AND cw.userid = ?
+SQL;
+    $walls = $DB->get_records_sql($walls_sql, [$wall->id, $userid]);
+
+    if ($type == COMPLETION_AND && $wall->completionpostonwall && $wall->completioncreatewall) {
+        return !empty($notes) && !empty($walls);
+    } else if ($type == COMPLETION_OR && $wall->completionpostonwall && $wall->completioncreatewall) {
+        return !empty($notes) || !empty($walls);
+    } else if ($wall->completionpostonwall) {
+        return !empty($notes);
+    } else if ($wall->completioncreatewall) {
+        return !empty($walls);
+    }
+    return $type;
 }

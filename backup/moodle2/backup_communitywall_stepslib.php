@@ -12,6 +12,8 @@ class backup_communitywall_activity_structure_step extends backup_activity_struc
             'closed',
             'timecreated',
             'timemodified',
+            'completioncreatewall',
+            'completionpostonwall'
         ));
 
         $wall->set_source_table('communitywall', array('id' => backup::VAR_ACTIVITYID));

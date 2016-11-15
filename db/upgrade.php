@@ -23,5 +23,21 @@ function xmldb_communitywall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2014031800, 'mod', 'communitywall');
     }
 
+    // add completion criteria columns to database (e.g. 'completioncreatewall' and 'completionpostonwall')
+    if ($oldversion < 2016111500) {
+        $table = new xmldb_table('communitywall');
+
+        $completioncreatewall = new xmldb_field('completioncreatewall', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        if (!$dbman->field_exists($table, $completioncreatewall)) {
+            $dbman->add_field($table, $completioncreatewall);
+        }
+        $completionpostonwall = new xmldb_field('completionpostonwall', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        if (!$dbman->field_exists($table, $completionpostonwall)) {
+            $dbman->add_field($table, $completionpostonwall);
+        }
+
+        upgrade_plugin_savepoint(true, 2016111500, 'mod', 'communitywall');
+    }
+
     return true;
 }

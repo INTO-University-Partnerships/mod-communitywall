@@ -32,6 +32,10 @@ $string['post_note'] = 'Post note';
 $string['click_to_edit'] = 'Click to edit';
 $string['confirm_delete_wall'] = 'Are you sure you want to delete this wall?';
 $string['confirm_delete_note'] = 'Are you sure you want to delete this note?';
+$string['completioncreatewall'] = 'Creation completes Community Wall activity';
+$string['completioncreatewall_desc'] = 'Student must submit a Community Wall to complete this activity';
+$string['completionpostonwall'] = 'Note creation completes Community Wall activity';
+$string['completionpostonwall_desc'] = 'Student must add a note to another user\'s Community wall to complete this activity';
 
 // capabilities
 $string['communitywall:addinstance'] = 'Add a new community wall';
